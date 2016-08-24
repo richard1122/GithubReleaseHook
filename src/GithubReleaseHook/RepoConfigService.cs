@@ -10,28 +10,21 @@ namespace GithubReleaseHook
 {
     public interface IRepoConfigService
     {
-        Config GetConfig();
+        Config Config { get; }
     }
-    public class RepoConfigService:IRepoConfigService
+    public class RepoConfigService : IRepoConfigService
     {
-        private Config config;
+        public Config Config { get; }
+        private readonly object _thisLock = new object();
+
         public RepoConfigService()
         {
             var path = Path.Combine(Directory.GetCurrentDirectory(), "repo.yml");
             var deserializer = new Deserializer(namingConvention: new CamelCaseNamingConvention());
-//            config = deserializer.Deserialize<Config>(File.OpenText(path));
-//            File.OpenText(path).Dispose();
-            var watcher = new FileSystemWatcher(Directory.GetCurrentDirectory(), "repo.yml") {EnableRaisingEvents = true};
-            watcher.Changed += (sender, args) =>
+            using (var sr = File.OpenText(path))
             {
-                config = deserializer.Deserialize<Config>(File.OpenText(path));
-            };
+                Config = deserializer.Deserialize<Config>(sr);
+            }
         }
-
-        Config IRepoConfigService.GetConfig()
-        {
-            throw new NotImplementedException();
-        }
-
     }
 }

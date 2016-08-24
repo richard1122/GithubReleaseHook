@@ -18,8 +18,6 @@ namespace GithubReleaseHook
                 .UseUrls("http://+:8081")
                 .UseStartup<Server>()
                 .Build();
-
-            
             host.Run();
         }
     }

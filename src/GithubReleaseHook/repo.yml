@@ -1,1 +1,6 @@
 repo: richard1122/blog.hlyue.com
+file:
+    - release.tar.gz
+script:
+    - tar xavf $f0
+secret: PfShtSpU7EznlxKK

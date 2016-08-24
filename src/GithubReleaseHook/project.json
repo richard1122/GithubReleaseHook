@@ -10,8 +10,10 @@
       "type": "platform",
       "version": "1.0.0"
     },
+    "Newtonsoft.Json": "9.0.1",
     "System.Net.Http": "4.1.0",
     "System.Runtime.Serialization.Primitives": "4.1.1",
+    "System.Security.Cryptography.Algorithms": "4.2.0",
     "YamlDotNet": "3.9.0"
   },
 
