@@ -23,28 +23,30 @@ namespace GithubReleaseHook
         {
             try
             {
-                var client = new HttpClient();
-                var files = await Task.WhenAll(_payload.Release.Assets
-                    .FindAll(it => _config.File.Contains(it.Name))
-                    .Select(async it =>
-                    {
-                        var tempFile = Path.GetTempFileName();
-                        var res = await client.GetAsync(it.BrowserDownloadUrl, HttpCompletionOption.ResponseHeadersRead);
-                        using (var fo = File.OpenWrite(tempFile))
+                using (var client = new HttpClient())
+                {
+                    var files = await Task.WhenAll(_payload.Release.Assets
+                        .FindAll(it => _config.File.Contains(it.Name))
+                        .Select(async it =>
                         {
-                            System.Console.Write($"{it.Name} => {tempFile}: started ... ");
-                            await (await res.Content.ReadAsStreamAsync()).CopyToAsync(fo);
-                            System.Console.WriteLine("finished");
-                        }
-                        return tempFile;
-                    }));
+                            var tempFile = Path.GetTempFileName();
+                            var res =
+                                await client.GetAsync(it.BrowserDownloadUrl, HttpCompletionOption.ResponseHeadersRead);
+                            using (var fo = File.OpenWrite(tempFile))
+                            {
+                                System.Console.Write($"{it.Name} => {tempFile}: started ... ");
+                                await (await res.Content.ReadAsStreamAsync()).CopyToAsync(fo);
+                                System.Console.WriteLine("finished");
+                            }
+                            return tempFile;
+                        }));
+                }
             }
             catch (Exception ex)
             {
                 System.Console.Error.WriteLine(ex.StackTrace);
                 throw;
             }
-            
         }
     }
 }
