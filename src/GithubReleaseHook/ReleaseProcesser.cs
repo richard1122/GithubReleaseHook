@@ -51,7 +51,6 @@ namespace GithubReleaseHook
             _config.ParsedScript = _config.Script.Select(it =>
             {
                 var matches = scriptParserReg.Matches(it);
-                var list = new List<int>();
                 var finalPosition = 0;
                 var builder = new StringBuilder();
                 for (var i = 0; i != matches.Count; ++i)
@@ -61,37 +60,37 @@ namespace GithubReleaseHook
                     if (group >= _config.DownloadedFile.Count())
                         throw new IndexOutOfRangeException($"group id: {group}, DownloadedFile size: {_config.DownloadedFile.Count()}");
                     builder.Append(it, finalPosition, match.Index - finalPosition);
-                    builder.Append($"${i}");
-                    list.Add(group);
+                    builder.Append(_config.DownloadedFile[group]);
                     finalPosition = match.Index + match.Length;
                 }
                 builder.Append(it, finalPosition, it.Length - finalPosition);
-                return $"-c 'cd \"{_config.WorkingDir}\"; {builder.ToString()}' {string.Join(" ", list.Select(ith => _config.DownloadedFile[ith]))}";
+                return builder.ToString();
             }).ToList();
         }
 
-        public void ExecuteScript()
+        public async Task ExecuteScript()
         {
-            _config.ParsedScript.ForEach(it =>
+            var processStartInfo = new ProcessStartInfo
             {
-                var processStartInfo = new ProcessStartInfo
-                {
-                    FileName = "bash",
-                    Arguments = it,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = false,
-                    RedirectStandardError = false,
-                    CreateNoWindow = false,
-                };
-                var process = new Process
-                {
-                    StartInfo = processStartInfo
-                };
-                System.Console.WriteLine(processStartInfo.Arguments);
-                process.Start();
-
-                process.WaitForExit();
-            });
+                FileName = "sh",
+                UseShellExecute = false,
+                RedirectStandardOutput = false,
+                RedirectStandardError = false,
+                RedirectStandardInput = true,
+                CreateNoWindow = false,
+            };
+            var process = new Process
+            {
+                StartInfo = processStartInfo
+            };
+            process.Start();
+            await process.StandardInput.WriteLineAsync($"cd \"{_config.WorkingDir}\"");
+            foreach (var script in _config.ParsedScript)
+            {
+                await process.StandardInput.WriteLineAsync(script);
+            }
+            process.StandardInput.Dispose();
+            process.WaitForExit();
         }
     }   
 }

@@ -7,6 +7,7 @@ using GithubReleaseHook.models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -26,6 +27,9 @@ namespace GithubReleaseHook
             {
                 try
                 {
+                    StringValues id;
+                    context.Request.Headers.TryGetValue("X-GitHub-Delivery", out id);
+                    System.Console.WriteLine($"Start processing delivery {id[0]}");
                     var configService = context.RequestServices.GetService(typeof(IRepoConfigService)) as IRepoConfigService;
                     await context.Response.WriteAsync("Hello");
                     using (var reader = new StreamReader(context.Request.Body))
@@ -37,8 +41,9 @@ namespace GithubReleaseHook
                         System.Console.WriteLine("Start downloading files:"); 
                         await processer.DownloadFiles();
                         processer.ParseScript();
-                        processer.ExecuteScript();
+                        await processer.ExecuteScript();
                     }
+                    System.Console.WriteLine($"delivery {id[0]} process finished.");
                 }
                 catch (Exception ex)
                 {
