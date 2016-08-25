@@ -42,7 +42,6 @@ file:
     - release.tar.gz
 script:
     - tar xavf $f0
-    - ls
-secret: abcd
-workingDir: C:\code\blog.hlyue.com
+secret: sec
+workingDir: /blog
 ```
