@@ -70,9 +70,23 @@ namespace GithubReleaseHook
 
         public async Task ExecuteScript()
         {
+            var scriptFile = Path.GetTempFileName();
+            using (var file = File.OpenWrite(scriptFile))
+            {
+                using (var fw = new StreamWriter(file))
+                {
+                    await fw.WriteLineAsync($"cd \"{_config.WorkingDir}\"");
+                    foreach (var script in _config.ParsedScript)
+                    {
+                        await fw.WriteLineAsync(script);
+                    }
+                }
+            }
+
             var processStartInfo = new ProcessStartInfo
             {
                 FileName = "sh",
+                Arguments = scriptFile,
                 UseShellExecute = false,
                 RedirectStandardOutput = false,
                 RedirectStandardError = false,
@@ -83,13 +97,8 @@ namespace GithubReleaseHook
             {
                 StartInfo = processStartInfo
             };
+            
             process.Start();
-            await process.StandardInput.WriteLineAsync($"cd \"{_config.WorkingDir}\"");
-            foreach (var script in _config.ParsedScript)
-            {
-                await process.StandardInput.WriteLineAsync(script);
-            }
-            process.StandardInput.Dispose();
             process.WaitForExit();
         }
     }   

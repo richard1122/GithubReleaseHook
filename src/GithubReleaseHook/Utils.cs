@@ -17,9 +17,9 @@ namespace GithubReleaseHook
 
         public static string ConvertPathToCrossPlatform(string path)
         {
-            path = path.Replace(@"\", "/");
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
+                path = path.Replace(@"\", "/");
                 path = ConvertPathToCygwinStyle(path);
             }
             return path;
