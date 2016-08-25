@@ -37,6 +37,7 @@ namespace GithubReleaseHook
                         System.Console.WriteLine("Start downloading files:"); 
                         await processer.DownloadFiles();
                         processer.ParseScript();
+                        processer.ExecuteScript();
                     }
                 }
                 catch (Exception ex)
