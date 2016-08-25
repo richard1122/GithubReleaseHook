@@ -20,11 +20,15 @@ namespace GithubReleaseHook
         public RepoConfigService()
         {
             var path = Path.Combine(Directory.GetCurrentDirectory(), "repo.yml");
-            var deserializer = new Deserializer(namingConvention: new CamelCaseNamingConvention());
+            var deserializer = new Deserializer(namingConvention: new CamelCaseNamingConvention(), ignoreUnmatched: true);
             using (var sr = File.OpenText(path))
             {
                 Config = deserializer.Deserialize<Config>(sr);
             }
+            Config.WorkingDir = Utils.ConvertPathToCrossPlatform(
+                Path.IsPathRooted(Config.WorkingDir)
+                    ? Config.WorkingDir
+                    : Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), Config.WorkingDir)));
         }
     }
 }

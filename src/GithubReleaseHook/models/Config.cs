@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-namespace GithubReleaseHook
+namespace GithubReleaseHook.models
 {
     public class Config
     {
@@ -12,6 +8,8 @@ namespace GithubReleaseHook
         public List<string> File { get; set; }
         public List<string> Script { get; set; }
         public string Secret { get; set; }
+
+        public string WorkingDir { get; set; }
 
         public List<string> DownloadedFile { get; set; }
         public List<string> ParsedScript { get; set; }

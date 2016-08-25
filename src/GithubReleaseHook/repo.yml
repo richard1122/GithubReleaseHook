@@ -5,3 +5,4 @@ script:
     - tar xavf $f0
     - ls
 secret: PfShtSpU7EznlxKK
+workingDir: C:\code\blog.hlyue.com

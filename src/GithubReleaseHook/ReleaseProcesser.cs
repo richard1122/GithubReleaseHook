@@ -40,17 +40,7 @@ namespace GithubReleaseHook
                             await (await res.Content.ReadAsStreamAsync()).CopyToAsync(fo);
                             System.Console.WriteLine("finished");
                         }
-                        tempFile = tempFile.Replace(@"\", @"/");
-                        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                        {
-                            return tempFile;
-                        }
-                        else
-                        {
-                            char c = char.ToLower(tempFile[0]);
-                            tempFile = $"/mnt/{c}{tempFile.Substring(2)}";
-                            return tempFile;
-                        }
+                        return Utils.ConvertPathToCrossPlatform(tempFile);
                     }))).ToList();
             }
         }
@@ -71,12 +61,12 @@ namespace GithubReleaseHook
                     if (group >= _config.DownloadedFile.Count())
                         throw new IndexOutOfRangeException($"group id: {group}, DownloadedFile size: {_config.DownloadedFile.Count()}");
                     builder.Append(it, finalPosition, match.Index - finalPosition);
-                    builder.Append($"\\${i}");
+                    builder.Append($"${i}");
                     list.Add(group);
                     finalPosition = match.Index + match.Length;
                 }
                 builder.Append(it, finalPosition, it.Length - finalPosition);
-                return $"-c \"{builder.ToString()}\" {string.Join(" ", list.Select(ith => _config.DownloadedFile[ith]))}";
+                return $"-c 'cd \"{_config.WorkingDir}\"; {builder.ToString()}' {string.Join(" ", list.Select(ith => _config.DownloadedFile[ith]))}";
             }).ToList();
         }
 
@@ -91,7 +81,7 @@ namespace GithubReleaseHook
                     UseShellExecute = false,
                     RedirectStandardOutput = false,
                     RedirectStandardError = false,
-                    CreateNoWindow = false
+                    CreateNoWindow = false,
                 };
                 var process = new Process
                 {
@@ -99,6 +89,7 @@ namespace GithubReleaseHook
                 };
                 System.Console.WriteLine(processStartInfo.Arguments);
                 process.Start();
+
                 process.WaitForExit();
             });
         }
