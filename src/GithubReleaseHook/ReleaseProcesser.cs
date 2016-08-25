@@ -44,10 +44,10 @@ namespace GithubReleaseHook
 
         public void ParseScript()
         {
-            var ScriptParserReg = new Regex("\\$f([0-9])");
+            var scriptParserReg = new Regex("\\$f([0-9])");
             _config.ParsedScript = _config.Script.Select(it =>
             {
-                var matches = ScriptParserReg.Matches(it);
+                var matches = scriptParserReg.Matches(it);
                 var finalPosition = 0;
                 var builder = new StringBuilder();
                 foreach (Match match in matches)

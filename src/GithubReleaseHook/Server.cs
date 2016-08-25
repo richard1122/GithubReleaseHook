@@ -36,7 +36,7 @@ namespace GithubReleaseHook
                         var processer = new ReleaseProcesser(configService.Config, payload);
                         System.Console.WriteLine("Start downloading files:"); 
                         await processer.DownloadFiles();
-                        await processer.ParseScript();
+                        processer.ParseScript();
                     }
                 }
                 catch (Exception ex)
