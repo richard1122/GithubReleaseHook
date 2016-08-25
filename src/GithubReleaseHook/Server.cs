@@ -24,17 +24,27 @@ namespace GithubReleaseHook
             app.UseMiddleware<AuthenticationMiddleware>();
             app.Run(async context =>
             {
-                var configService = context.RequestServices.GetService(typeof(IRepoConfigService)) as IRepoConfigService;
-                await context.Response.WriteAsync("Hello");
-                using (var reader = new StreamReader(context.Request.Body))
+                try
                 {
-                    var jsonSerializerSettings = new JsonSerializerSettings {ContractResolver = new CamelCasePropertyNamesContractResolver()};
-                    var str = context.Items["content"] as string;
-                    var payload = JsonConvert.DeserializeObject<ReleasePayload>(str, jsonSerializerSettings);
-                    var processer = new ReleaseProcesser(configService.Config, payload);
-                    System.Console.WriteLine("Start downloading files:");
-                    await processer.DownloadFiles();
+                    var configService = context.RequestServices.GetService(typeof(IRepoConfigService)) as IRepoConfigService;
+                    await context.Response.WriteAsync("Hello");
+                    using (var reader = new StreamReader(context.Request.Body))
+                    {
+                        var jsonSerializerSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+                        var str = context.Items["content"] as string;
+                        var payload = JsonConvert.DeserializeObject<ReleasePayload>(str, jsonSerializerSettings);
+                        var processer = new ReleaseProcesser(configService.Config, payload);
+                        System.Console.WriteLine("Start downloading files:"); 
+                        await processer.DownloadFiles();
+                        await processer.ParseScript();
+                    }
                 }
+                catch (Exception ex)
+                {
+                    System.Console.Error.WriteLine(ex.StackTrace);
+                    throw;
+                }
+                
             });
         }
     }

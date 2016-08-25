@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using GithubReleaseHook.models;
 
@@ -21,32 +23,45 @@ namespace GithubReleaseHook
 
         public async Task DownloadFiles()
         {
-            try
+            using (var client = new HttpClient())
             {
-                using (var client = new HttpClient())
-                {
-                    var files = await Task.WhenAll(_payload.Release.Assets
-                        .FindAll(it => _config.File.Contains(it.Name))
-                        .Select(async it =>
+                _config.DownloadedFile = (await Task.WhenAll(_payload.Release.Assets
+                    .FindAll(it => _config.File.Contains(it.Name))
+                    .Select(async it =>
+                    {
+                        var tempFile = Path.GetTempFileName();
+                        var res = await client.GetAsync(it.BrowserDownloadUrl, HttpCompletionOption.ResponseHeadersRead);
+                        using (var fo = File.OpenWrite(tempFile))
                         {
-                            var tempFile = Path.GetTempFileName();
-                            var res =
-                                await client.GetAsync(it.BrowserDownloadUrl, HttpCompletionOption.ResponseHeadersRead);
-                            using (var fo = File.OpenWrite(tempFile))
-                            {
-                                System.Console.Write($"{it.Name} => {tempFile}: started ... ");
-                                await (await res.Content.ReadAsStreamAsync()).CopyToAsync(fo);
-                                System.Console.WriteLine("finished");
-                            }
-                            return tempFile;
-                        }));
-                }
+                            System.Console.Write($"{it.Name} => {tempFile}: started ... ");
+                            await (await res.Content.ReadAsStreamAsync()).CopyToAsync(fo);
+                            System.Console.WriteLine("finished");
+                        }
+                        return tempFile;
+                    }))).ToList();
             }
-            catch (Exception ex)
+        }
+
+        public void ParseScript()
+        {
+            var ScriptParserReg = new Regex("\\$f([0-9])");
+            _config.ParsedScript = _config.Script.Select(it =>
             {
-                System.Console.Error.WriteLine(ex.StackTrace);
-                throw;
-            }
+                var matches = ScriptParserReg.Matches(it);
+                var finalPosition = 0;
+                var builder = new StringBuilder();
+                foreach (Match match in matches)
+                {
+                    var group = int.Parse(match.Groups[1].Value);
+                    if (group >= _config.DownloadedFile.Count())
+                        throw new IndexOutOfRangeException($"group id: {group}, DownloadedFile size: {_config.DownloadedFile.Count()}");
+                    builder.Append(it, finalPosition, match.Index - finalPosition);
+                    builder.Append(_config.DownloadedFile[group]);
+                    finalPosition = match.Index + match.Length;
+                }
+                builder.Append(it, finalPosition, it.Length - finalPosition);
+                return builder.ToString();
+            }).ToList();
         }
     }
 }

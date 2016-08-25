@@ -2,5 +2,8 @@ repo: richard1122/blog.hlyue.com
 file:
     - release.tar.gz
 script:
-    - tar xavf $f0
+    - tar xavf $f0 end test
+    - $f0 test
+    - $f0
+    - ls
 secret: PfShtSpU7EznlxKK

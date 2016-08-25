@@ -50,7 +50,6 @@ namespace GithubReleaseHook
                     ResponseError(context);
                     return;
                 }
-
             }
             await _next.Invoke(context);
         }
