@@ -9,17 +9,17 @@ Windows & Linux are primary supported platform.
 
 You can write your own project's Dockerfile and repo.yml, your Dockerfile should `FROM richard1122/GithubReleaseHook`.
 
-## Example
+## Usage
 
 ### Github Webhook
 
-Add webhook to your docker exposed port. Select `Let me select individual events.` and only check `Release`. Other event will be droped silently.
+Add webhook to your docker exposed port. Select `Let me select individual events.` and only check `Release`. Other events will be droped silently.
 
 For security, you **should** generate unique secret key and keep it secret.
 
 ### Dockerfile
 
-A very simple Dockerfile, copy `repo.yml` (will discuss later) into `/usr/src/app/`.
+A very simple Dockerfile, copy `repo.yml` (will discuss later) into `/usr/src/app/` (which is GithubReleaseHook source dir).
 
 ```Dockerfile
 FROM richard1122/githubreleasehook
@@ -45,3 +45,7 @@ script:
 secret: sec
 workingDir: /blog
 ```
+
+### Nginx
+
+Your static file server might be Nginx running outside docker. Add Docker Volumn to `/blog` of your Docker.
