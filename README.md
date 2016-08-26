@@ -1,6 +1,8 @@
 # GithubReleaseHook
 Github Release Hook is a tool to handle Github release event and run script.
 
+更多细节请见中文博客: [blog.hlyue.com](https://blog.hlyue.com/2016/08/26/GithubReleaseHookDevNotes/)
+
 ## Usage
 
 Currently I only produce docker.
